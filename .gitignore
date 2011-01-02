@@ -1,3 +1,4 @@
 *.epub
+*.log
 tmp/*
 Gemfile.lock

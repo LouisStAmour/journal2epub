@@ -116,14 +116,14 @@ issue[:articles].each do |article|
   (doc2/"//a").remove_attr('name')
   (doc2/"//a[@href]").each do |link|
     if link[:href] =~ %r{^/articles/}
-      link[:href] = "http://journal.code4lib.org#{link[:href]}"
+      link['href'] = "http://journal.code4lib.org#{link[:href]}"
     end
     if link[:href] =~ %r{^http://journal.code4lib.org/articles/}
       fragment = link[:href].split('#')[1]
       issue[:articles].each do |a|
         if link[:href] == a[:url]
-          link[:href] = a[:filename]
-          link[:href] += fragment unless fragment.nil?
+          link['href'] = a[:filename]
+          link['href'] += fragment unless fragment.nil?
           break
         end
       end
@@ -132,9 +132,18 @@ issue[:articles].each do |article|
   (doc2/"//*[@align]").remove_attr('align')
   (doc2/"//*[@width]").remove_attr('width')
   (doc2/"//*[@height]").remove_attr('height')
-  (doc2/"h2, h3").each_with_index do |heading, j|
-    heading['id'] |= "section#{j+1}"
-    if heading.name.downcase == 'h2'
+  doc2.xpath('//pre').each do |p|
+    if p.text.strip.length == 0
+      p.remove
+    else
+      p.inner_html = p.inner_html.gsub(%r{^\n+}, "\n")
+    end
+  end
+  headings = doc2.xpath("//h2|//h3")
+  puts article[:url]
+  headings.each_with_index do |heading, j|
+    heading['id'] ||= "epubsection#{j+1}"
+    if heading.name.downcase == 'h2' || article[:sections].empty?
       article[:sections] << {
         :title => heading.text,
         :id => heading['id'],
@@ -148,15 +157,17 @@ issue[:articles].each do |article|
     end
   end
   
-  (doc2/"a img").each do |img|
+  (doc2/'a img').each do |img|
     image_url = img.parent[:href]
-    image_filename = "images/#{issue[:files].length}.#{image_url.split('.')[-1]}"
-    img['src'] = image_filename
-    img.parent.replace(img)
-    File.open("#{dir}/OEBPS/"+image_filename, 'w') do |f|
-      f.write open(image_url).read
+    if(image_url =~ %r{^http://journal.code4lib.org/wp-content/uploads/})
+      image_filename = "images/#{issue[:files].length}.#{image_url.split('.')[-1]}"
+      img['src'] = image_filename
+      img.parent.replace(img)
+      File.open("#{dir}/OEBPS/"+image_filename, 'w') do |f|
+        f.write open(image_url).read
+      end
+      issue[:files] << image_filename
     end
-    issue[:files] << image_filename
   end
   
   (doc2/"img").each do |img|
@@ -221,4 +232,6 @@ Dir["#{dir}/**/*"].each do |path|
 end
 zipfile.commit
 
-puts `java -jar epubcheck-1.1/epubcheck-1.1.jar #{epubname}`
+File.open("#{opts[:issue]}.log", 'w') do |f| 
+  f.write `java -jar epubcheck-1.1/epubcheck-1.1.jar #{epubname} 2>&1`
+end
