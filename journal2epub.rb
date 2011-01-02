@@ -114,9 +114,39 @@ issue[:articles].each do |article|
   (doc2/"//html[@lang]").remove_attr('lang')
   (doc2/"//pre").remove_attr('name')
   (doc2/"//a").remove_attr('name')
+  (doc2/"//a[@href]").each do |link|
+    if link[:href] =~ %r{^/articles/}
+      link[:href] = "http://journal.code4lib.org#{link[:href]}"
+    end
+    if link[:href] =~ %r{^http://journal.code4lib.org/articles/}
+      fragment = link[:href].split('#')[1]
+      issue[:articles].each do |a|
+        if link[:href] == a[:url]
+          link[:href] = a[:filename]
+          link[:href] += fragment unless fragment.nil?
+          break
+        end
+      end
+    end
+  end
   (doc2/"//*[@align]").remove_attr('align')
   (doc2/"//*[@width]").remove_attr('width')
   (doc2/"//*[@height]").remove_attr('height')
+  (doc2/"h2, h3").each_with_index do |heading, j|
+    heading['id'] |= "section#{j+1}"
+    if heading.name.downcase == 'h2'
+      article[:sections] << {
+        :title => heading.text,
+        :id => heading['id'],
+        :sections => []
+      }
+    else
+      article[:sections].last[:sections] << {
+        :title => heading.text,
+        :id => heading['id']
+      }
+    end
+  end
   
   (doc2/"a img").each do |img|
     image_url = img.parent[:href]

@@ -3,7 +3,7 @@
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
   <head>
     <meta name="dtb:uid" content="<%= issue[:uid] %>"/>
-    <meta name="dtb:depth" content="2" />
+    <meta name="dtb:depth" content="3" />
     <meta name="dtb:totalPageCount" content="0" />
     <meta name="dtb:maxPageNumber" content="0" />
   </head>
@@ -17,7 +17,12 @@
       <navPoint id="<%= article[:id] %>-<%= section[:id] %>" 
                 playOrder="<%= playOrderCounter %>">
         <navLabel><text><%= ERB::Util.h section[:title] %></text></navLabel>
-        <content src="<%= article[:filename] %>#<%= section[:id] %>" />
+        <content src="<%= article[:filename] %>#<%= section[:id] %>" /><% section[:sections].each do |subsection| %><% playOrderCounter += 1 %>
+        <navPoint id="<%= article[:id] %>-<%= subsection[:id] %>" 
+                  playOrder="<%= playOrderCounter %>">
+          <navLabel><text><%= ERB::Util.h subsection[:title] %></text></navLabel>
+          <content src="<%= article[:filename] %>#<%= subsection[:id] %>" />
+        </navPoint><% end %>
       </navPoint><% end %>
     </navPoint><% end %>
   </navMap>
