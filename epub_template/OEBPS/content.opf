@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  unique-identifier="bookid" version="2.0">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:opf="http://www.idpf.org/2007/opf">
+    <dc:title><%= issue[:title] %></dc:title>
+    <dc:identifier opf:scheme="ISSN"><%= issue[:issn] %></dc:identifier>
+    <dc:identifier opf:scheme="URI"><%= issue[:uri] %></dc:identifier>
+    <dc:identifier id="bookid"><%= issue[:uid] %></dc:identifier>
+    <dc:date opf:event="original-publication"><%= issue[:date] %></dc:date>
+    <dc:date opf:event="ops-publication"><%= issue[:now] %></dc:date>
+    <dc:language>en</dc:language>
+    <dc:creator opf:role="pbl">Code4Lib</dc:creator>
+    <dc:rights>Creative Commons Attribution 3.0 United States License</dc:rights>
+    <dc:rights>http://creativecommons.org/licenses/by/3.0/us/</dc:rights>
+    <dc:source><%= issue[:uri] %></dc:source>
+    <dc:contributor opf:role="prg">Louis St-Amour</dc:contributor>
+  </metadata>
+  <manifest>
+    <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml" />
+    <item id="template-css" href="template.css" media-type="text/css" />
+<% issue[:articles].each do |article| %>    <item       id="<%= article[:id] %>"
+              href="<%= article[:filename] %>"
+        media-type="application/xhtml+xml" />
+<% end %>    <% issue[:files].each_with_index do |filename, i| %>    <item       id="file<%= i %>"
+              href="<%= filename %>"
+        media-type="<%= MIME::Types.type_for(filename).first %>" />
+<% end %>
+  </manifest>
+  <spine toc="ncx">
+<% issue[:articles].each do |article| %>    <itemref idref="<%= article[:id] %>" />
+<% end %>  </spine>
+  <guide>
+<% issue[:articles].each do |article| %>    <reference type="text" href="<%= article[:filename] %>" />
+<% end %>  </guide>
+</package>

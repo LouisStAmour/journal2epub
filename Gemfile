@@ -1,2 +1,6 @@
 source 'http://rubygems.org'
 gem 'nokogiri'
+gem 'trollop'
+gem 'mime-types'
+gem 'rubyzip'
+gem 'tidy_ffi'

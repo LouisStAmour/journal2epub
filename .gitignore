@@ -1,0 +1,3 @@
+*.epub
+tmp/*
+Gemfile.lock
